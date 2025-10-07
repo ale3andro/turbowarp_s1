@@ -61,7 +61,7 @@ class ArduinoWebSerial {
 
     this.reader = textDecoder.readable.getReader();
     this.writer = textEncoder.writable.getWriter();
-    alert('✅ Connected to Arduino!');
+    alert('Connected to Arduino!');
   }
 
   async connect() {
@@ -72,13 +72,13 @@ class ArduinoWebSerial {
         await this.setupStreams();
       }
     } catch (err) {
-      alert('❌ Connection failed: ' + err.message);
+      alert('Connection failed: ' + err.message);
     }
   }
 
   async send(args) {
     if (!this.writer) {
-      alert('⚠️ Not connected yet!');
+      alert('Not connected yet!');
       return;
     }
     await this.writer.write(args.MESSAGE + '\n');
@@ -97,7 +97,7 @@ class ArduinoWebSerial {
   // New block: LED on pin 13
   async led(args) {
     if (!this.writer) {
-      alert('⚠️ Not connected yet!');
+      alert('Not connected yet!');
       return;
     }
     const cmd = args.STATE === 'άναψε' ? 'LED ON' : 'LED OFF';
