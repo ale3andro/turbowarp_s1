@@ -3,6 +3,7 @@ class ArduinoWebSerial {
     this.port = null;
     this.reader = null;
     this.writer = null;
+    this.textDecoder = new TextDecoder();
   }
 
   getInfo() {
@@ -21,12 +22,28 @@ class ArduinoWebSerial {
           opcode: 'send',
           blockType: Scratch.BlockType.COMMAND,
           text: 'στείλε [MESSAGE]',
-          arguments: { MESSAGE: { type: Scratch.ArgumentType.STRING, defaultValue: 'Hello Arduino!' } }
+          arguments: { 
+            MESSAGE: { 
+              type: Scratch.ArgumentType.STRING, 
+              defaultValue: 'Hello Arduino!' 
+            } 
+          }
         },
         {
           opcode: 'readLine',
           blockType: Scratch.BlockType.REPORTER,
           text: 'διάβασε γραμμή'
+        },
+        {
+          opcode: 'readAnalog',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'διάβασε αναλογικό από [PIN]',
+          arguments: {
+            PIN: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'analogPins'
+            }
+          },
         },
         {
           opcode: 'led',
@@ -54,6 +71,10 @@ class ArduinoWebSerial {
         pins: {
           acceptReporters: false,
           items: ['D4', 'D5', 'D6', 'D7', 'D8', 'D9']
+        },
+        analogPins: {
+          acceptReporters: true,
+          items: ['A0', 'A1', 'A2', 'A3']
         }
       }
     };
@@ -112,7 +133,6 @@ class ArduinoWebSerial {
     return value.trim();
   }
 
-  // New block: LED on pin 13
   async led(args) {
     if (!this.writer) {
       alert('Not connected yet!');
@@ -122,6 +142,28 @@ class ArduinoWebSerial {
     const cmd = args.STATE === 'άναψε' ? 'LED_ON_' + pin.substring(1)  : 'LED_OFF_' + pin.substring(1);
     
     await this.writer.write(cmd + '\n');
+  }
+
+  async readAnalog(args) {
+    if (!this.writer || !this.reader) {
+      alert('Δεν έχει γίνει σύνδεση με το S1');
+      return;
+    }
+    const pin = args.PIN;
+    const cmd = 'READ_' + pin.substring(1);
+    await this.writer.write(new TextEncoder().encode(cmd));
+
+    let result = '';
+    try {
+      const { value, done } = await this.reader.read();
+      if (done) return 'error';
+      result = this.textDecoder.decode(value).trim();
+    } catch (e) {
+      result = 'err';
+      alert(e);
+    }
+
+    return result;
   }
 }
 

@@ -41,6 +41,9 @@ void loop() {
         digitalWrite(args[2].toInt(), LOW);
         Serial.print("led off "); Serial.println(args[2]);
       }
+    } else if (args[0] == "READ" ) {
+        int value = analogRead(args[1].toInt());
+        Serial.println(value);
     } else {
       Serial.println("Not implemented");
     }
