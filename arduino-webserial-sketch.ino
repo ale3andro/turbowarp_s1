@@ -1,5 +1,5 @@
-#define MAX_PARTS  5   // Max number of parts you want to split into
-#define MAX_LENGTH 20  // Max length of each part
+String args[] = { "arg0", "arg1", "arg2", "arg3", "arg4" };
+int num_args = 0;
 
 void setup() {
   pinMode(13, OUTPUT);
@@ -10,41 +10,39 @@ void loop() {
   if (Serial.available()) {
     String cmd = Serial.readStringUntil('\n');
     cmd.trim();
-    /*
-      char input[] = "LED_ON_HIGH";
-      char* parts[MAX_PARTS];
-
-      splitString(input, parts);
-
-      for (int i = 0; i < MAX_PARTS && parts[i] != NULL; i++) {
-        Serial.print("Part ");
-        Serial.print(i);
-        Serial.print(": ");
-        Serial.println(parts[i]);
-      }  
-    */
-    if (cmd == "LED ON") {
-      digitalWrite(13, HIGH);
-      Serial.println("LED ON");
-    } else if (cmd == "LED OFF") {
-      digitalWrite(13, LOW);
-      Serial.println("LED OFF");
+    num_args = 0;
+    int index = -1;
+    int last_pos = -1;
+    while (true) {   
+      index = cmd.indexOf("_", index + 1);
+      if (index == -1) {
+        if (num_args>0) {
+          args[num_args] = cmd.substring(last_pos+1, -1);             
+        } else {
+          args[0] = cmd;
+        }
+        break;
+      }
+      args[num_args] = cmd.substring(last_pos+1, index);
+      num_args = num_args + 1;
+      last_pos = index;
     }
-  }
-}
-
-void splitString(char* input, char* parts[], char delimiter = '_') {
-  int i = 0;
-  char* token = strtok(input, &delimiter);
-
-  while (token != NULL && i < MAX_PARTS) {
-    parts[i] = token;
-    i++;
-    token = strtok(NULL, &delimiter);
-  }
-
-  // Optionally null-terminate the array
-  if (i < MAX_PARTS) {
-    parts[i] = NULL;
+    Serial.print("Total args: ");
+    Serial.println(num_args+1);
+    for (int k=0; k<=num_args; k++)
+      Serial.println(args[k]);
+    
+    if (args[0] == "LED") {
+      if (args[1]=="ON") {
+        digitalWrite(args[2].toInt(), HIGH);
+        Serial.print("led on "); Serial.println(args[2]);
+      }
+      else {
+        digitalWrite(args[2].toInt(), LOW);
+        Serial.print("led off "); Serial.println(args[2]);
+      }
+    } else {
+      Serial.println("Not implemented");
+    }
   }
 }

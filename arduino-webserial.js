@@ -40,7 +40,8 @@ class ArduinoWebSerial {
             },
             PIN: {
               type: Scratch.ArgumentType.STRING,
-              menu: 'pins'
+              menu: 'pins',
+              defaultValue: 'D6'
             }
           }
         }
@@ -52,7 +53,7 @@ class ArduinoWebSerial {
         },
         pins: {
           acceptReporters: false,
-          items: ['D5', 'D6', 'D7', 'D8', 'D9']
+          items: ['D4', 'D5', 'D6', 'D7', 'D8', 'D9']
         }
       }
     };
@@ -78,7 +79,7 @@ class ArduinoWebSerial {
 
     this.reader = textDecoder.readable.getReader();
     this.writer = textEncoder.writable.getWriter();
-    alert('Connected to Arduino!');
+    alert('Συνδέθηκε στο S1 Arduino!');
   }
 
   async connect() {
@@ -89,13 +90,13 @@ class ArduinoWebSerial {
         await this.setupStreams();
       }
     } catch (err) {
-      alert('Connection failed: ' + err.message);
+      alert('Η σύνδεση απέτυχε: ' + err.message);
     }
   }
 
   async send(args) {
     if (!this.writer) {
-      alert('Not connected yet!');
+      alert('Δεν υπάρχει σύνδεση με το S1');
       return;
     }
     await this.writer.write(args.MESSAGE + '\n');
@@ -118,7 +119,7 @@ class ArduinoWebSerial {
       return;
     }
     const pin = args.PIN;
-    const cmd = args.STATE === 'άναψε' ? 'LED_ON_' + pin  : 'LED_OFF_' + pin;
+    const cmd = args.STATE === 'άναψε' ? 'LED_ON_' + pin.substring(1)  : 'LED_OFF_' + pin.substring(1);
     
     await this.writer.write(cmd + '\n');
   }
