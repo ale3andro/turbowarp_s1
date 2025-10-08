@@ -10,6 +10,19 @@ void loop() {
   if (Serial.available()) {
     String cmd = Serial.readStringUntil('\n');
     cmd.trim();
+    /*
+      char input[] = "LED_ON_HIGH";
+      char* parts[MAX_PARTS];
+
+      splitString(input, parts);
+
+      for (int i = 0; i < MAX_PARTS && parts[i] != NULL; i++) {
+        Serial.print("Part ");
+        Serial.print(i);
+        Serial.print(": ");
+        Serial.println(parts[i]);
+      }  
+    */
     if (cmd == "LED ON") {
       digitalWrite(13, HIGH);
       Serial.println("LED ON");
