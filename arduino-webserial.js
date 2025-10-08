@@ -31,12 +31,29 @@ class ArduinoWebSerial {
         {
           opcode: 'led',
           blockType: Scratch.BlockType.COMMAND,
-          text: 'LED στο pin 13 [STATE]',
-          arguments: { STATE: { type: Scratch.ArgumentType.STRING, menu: 'onoff', defaultValue: 'άναψε' } }
+          text: 'LED στο pin [PIN] [STATE]',
+          arguments: { 
+            STATE: { 
+              type: Scratch.ArgumentType.STRING, 
+              menu: 'onoff', 
+              defaultValue: 'άναψε'
+            },
+            PIN: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'pins'
+            }
+          }
         }
       ],
       menus: {
-        onoff: { acceptReporters: false, items: ['άναψε', 'σβήσε'] }
+        onoff: { 
+          acceptReporters: false, 
+          items: ['άναψε', 'σβήσε'] 
+        },
+        pins: {
+          acceptReporters: false,
+          items: ['D5', 'D6', 'D7', 'D8', 'D9']
+        }
       }
     };
   }
@@ -100,7 +117,9 @@ class ArduinoWebSerial {
       alert('Not connected yet!');
       return;
     }
-    const cmd = args.STATE === 'άναψε' ? 'LED ON' : 'LED OFF';
+    const pin = args.PIN;
+    const cmd = args.STATE === 'άναψε' ? 'LED_ON_' + pin  : 'LED_OFF_' + pin;
+    
     await this.writer.write(cmd + '\n');
   }
 }
