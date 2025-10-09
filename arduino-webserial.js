@@ -42,7 +42,29 @@ class ArduinoWebSerial {
         {
           opcode: 'readAnalog',
           blockType: Scratch.BlockType.REPORTER,
-          text: 'διάβασε αναλογικό από [PIN]',
+          text: 'Διάβασε ποτενσιόμετρο από το pin [PIN]',
+          arguments: {
+            PIN: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'analogPins'
+            }
+          },
+        },
+        {
+          opcode: 'readAnalog',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Διάβασε επίπεδο φωτός από το pin [PIN]',
+          arguments: {
+            PIN: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'analogPins'
+            }
+          },
+        },
+        {
+          opcode: 'readAnalog',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Διάβασε επίπεδο ήχου από το μικρόφωνο στο pin [PIN]',
           arguments: {
             PIN: {
               type: Scratch.ArgumentType.STRING,
@@ -66,6 +88,41 @@ class ArduinoWebSerial {
               defaultValue: 'D6'
             }
           }
+        },
+        {
+          opcode: 'led',
+          blockType: Scratch.BlockType.COMMAND,
+          text: 'Laser στο pin [PIN] [STATE]',
+          arguments: { 
+            STATE: { 
+              type: Scratch.ArgumentType.STRING, 
+              menu: 'onoff', 
+              defaultValue: 'άναψε'
+            },
+            PIN: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'pins',
+              defaultValue: 'D6'
+            }
+          }
+        },
+        {
+          opcode: 'led_brightness',
+          blockType: Scratch.BlockType.COMMAND,
+          text: 'Led στο pin [PIN] άναψε με φωτεινότητα [BRIGHTNESS]',
+          arguments: { 
+            PIN: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'pins_led_brightness',
+              defaultValue: 'D6'
+            },
+            BRIGHTNESS: { 
+              type: Scratch.ArgumentType.STRING,
+              menu: 'brightnessLevels',
+              defaultValue: '128'
+            },
+            
+          }
         }
       ],
       menus: {
@@ -77,9 +134,17 @@ class ArduinoWebSerial {
           acceptReporters: false,
           items: ['D4', 'D5', 'D6', 'D7', 'D8', 'D9']
         },
+        pins_led_brightness: {
+          acceptReporters: false,
+          items: ['D5', 'D6', 'D9']
+        },
         analogPins: {
           acceptReporters: true,
           items: ['A0', 'A1', 'A2', 'A3']
+        },
+        brightnessLevels: {
+          acceptReporters: false,
+          items: ['0', '32', '64', '96', '128', '160', '192', '224', '255']
         }
       }
     };
@@ -151,6 +216,18 @@ class ArduinoWebSerial {
     }
     const pin = args.PIN;
     const cmd = args.STATE === 'άναψε' ? 'LED_ON_' + pin.substring(1)  : 'LED_OFF_' + pin.substring(1);
+    
+    await this.writer.write(cmd + '\n');
+  }
+
+  async led_brightness(args) {
+    if (!this.writer) {
+      alert('Not connected yet!');
+      return;
+    }
+    const pin = args.PIN;
+    const brightness = args.BRIGHTNESS;
+    const cmd = 'LEDBRIGHTNESS_' + pin.substring(1) + '_' + brightness;
     
     await this.writer.write(cmd + '\n');
   }

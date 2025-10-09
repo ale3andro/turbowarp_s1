@@ -27,23 +27,19 @@ void loop() {
       num_args = num_args + 1;
       last_pos = index;
     }
-    Serial.print("Total args: ");
-    Serial.println(num_args+1);
-    for (int k=0; k<=num_args; k++)
-      Serial.println(args[k]);
     
     if (args[0] == "LED") {
       if (args[1]=="ON") {
         digitalWrite(args[2].toInt(), HIGH);
-        Serial.print("led on "); Serial.println(args[2]);
       }
       else {
         digitalWrite(args[2].toInt(), LOW);
-        Serial.print("led off "); Serial.println(args[2]);
       }
     } else if (args[0] == "READ" ) {
         int value = analogRead(args[1].toInt());
         Serial.println(value);
+    } else if (args[0] == "LEDBRIGHTNESS" ) {
+        analogWrite(args[1].toInt(), args[2].toInt());
     } else {
       Serial.println("Not implemented");
     }
