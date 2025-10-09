@@ -14,6 +14,11 @@ class ArduinoWebSerial {
       color2: '#0062cc',
       blocks: [
         {
+          opcode: 'debugRead',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'debug serial read'
+        },
+        {
           opcode: 'connect',
           blockType: Scratch.BlockType.COMMAND,
           text: 'σύνδεση με Arduino'
@@ -78,6 +83,12 @@ class ArduinoWebSerial {
         }
       }
     };
+  }
+
+  async debugRead() {
+    if (!this.reader) return 'no reader';
+    const { value } = await this.reader.read();
+    return new TextDecoder().decode(value || new Uint8Array()).trim();
   }
 
   async ensureConnection() {
@@ -151,19 +162,17 @@ class ArduinoWebSerial {
     }
     const pin = args.PIN;
     const cmd = 'READ_' + pin.substring(1);
-    await this.writer.write(new TextEncoder().encode(cmd));
+    await this.writer.write(cmd + '\n');
 
     let result = '';
-    try {
+    while (true) {
       const { value, done } = await this.reader.read();
-      if (done) return 'error';
-      result = this.textDecoder.decode(value).trim();
-    } catch (e) {
-      result = 'err';
-      alert(e);
+      if (done) break;
+      result += value;
+      if (result.includes('\n')) break; // got full line
     }
 
-    return result;
+    return result.trim();
   }
 }
 
