@@ -112,7 +112,7 @@ class ArduinoWebSerial {
           }
         },
         {
-          opcode: 'led',
+          opcode: 'laser',
           blockType: Scratch.BlockType.COMMAND,
           text: 'Laser στο pin [PIN] [STATE]',
           arguments: { 
@@ -508,6 +508,7 @@ class ArduinoWebSerial {
   // Function aliases
   readSound = this.readAnalog;
   readLight = this.readAnalog;
+  laser = this.led;
   isMagneticFieldAvailable = this.isButtonPressed;
 }
 

@@ -70,10 +70,12 @@ void loop() {
     } else if (args[0] == "MOTOR" ) {
       if (args[2].toInt()==1) { // Fora rologiou
         digitalWrite(4, HIGH);
-        digitalWrite(3, 255 - args[1].toInt());
+        delay(250);
+        analogWrite(3, 255 - args[1].toInt());
       } else { // fora antistrofi rologiou
         digitalWrite(4, LOW);
-        digitalWrite(3, args[1].toInt());
+        delay(250);
+        analogWrite(3, args[1].toInt());
       }
     } else if (args[0] == "TEMP") {
         Serial.println(readTemperature(args[1].toInt()));
@@ -89,5 +91,6 @@ void loop() {
     } else {
       Serial.println("Not implemented");
     }
+    args[0] = "";
   }
 }
