@@ -14,11 +14,6 @@ class ArduinoWebSerial {
       color2: '#0062cc',
       blocks: [
         {
-          opcode: 'debugRead',
-          blockType: Scratch.BlockType.REPORTER,
-          text: 'debug serial read'
-        },
-        {
           opcode: 'connect',
           blockType: Scratch.BlockType.COMMAND,
           text: 'σύνδεση με Arduino'
@@ -38,6 +33,11 @@ class ArduinoWebSerial {
           opcode: 'readLine',
           blockType: Scratch.BlockType.REPORTER,
           text: 'διάβασε γραμμή'
+        },
+        {
+          opcode: 'connectionStatus',
+          blockType: Scratch.BlockType.REPORTER,
+          text: 'Κατάσταση σύνδεσης S1'
         },
         {
           opcode: 'readAnalog',
@@ -64,7 +64,7 @@ class ArduinoWebSerial {
         {
           opcode: 'readSound',
           blockType: Scratch.BlockType.REPORTER,
-          text: 'Διάβασε επίπεδο ήχου από το μικρόφωνο στο pin [PIN]',
+          text: 'Διάβασε ένταση ήχου από το μικρόφωνο στο pin [PIN]',
           arguments: {
             PIN: {
               type: Scratch.ArgumentType.STRING,
@@ -125,6 +125,65 @@ class ArduinoWebSerial {
               type: Scratch.ArgumentType.STRING,
               menu: 'pins',
               defaultValue: 'D6'
+            }
+          }
+        },
+        {
+          opcode: 'neopixel',
+          blockType: Scratch.BlockType.COMMAND,
+          text: 'Neopixel Led στο pin [PIN], [LEDS], χρώμα R:[R], G:[G], B:[B] φωτεινότητα [BRIGHTNESS]',
+          arguments: { 
+            PIN: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'servo_pins',
+              defaultValue: 'D5'
+            },
+            LEDS: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'neopixel_leds',
+              defaultValue: 'όλα'
+            },
+            R: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'color_values',
+              defaultValue: '255'
+            },
+            G: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'color_values',
+              defaultValue: '255'
+            },
+            B: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'color_values',
+              defaultValue: '255'
+            },
+            BRIGHTNESS: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'brightnessLevels',
+              defaultValue: '50'
+            }
+          }
+        },
+        {
+          opcode: 'buzzer',
+          blockType: Scratch.BlockType.COMMAND,
+          text: 'Buzzer στο pin [PIN], παίξε νότα [NOTE] για [TIME]',
+          arguments: { 
+            PIN: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'servo_pins',
+              defaultValue: 'D6'
+            },
+            NOTE: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'notes',
+              defaultValue: 'Χαμηλό Ντο (C3)'
+            },
+            TIME: {
+              type: Scratch.ArgumentType.STRING,
+              menu: 'note_times',
+              defaultValue: 'μισό'
             }
           }
         },
@@ -246,18 +305,29 @@ class ArduinoWebSerial {
           acceptReporters: false,
           items: ['0', '32', '64', '96', '128', '160', '192', '224', '255']
         },
+        color_values: {
+          acceptReporters: false,
+          items: ['0', '16', '32', '48', '64', '80', '96', '112', '128', '144', '160', '176', '192', '208', '224', '240', '255']
+        },
+        neopixel_leds: {
+          acceptReporters: true,
+          items: ['όλα', '1ο', '2ο', '3ο', '4ο']
+        },
         directions: {
           acceptReporters: false, 
           items: ['ρολογιού', 'αντίστροφη ρολογιού'] 
-        }
+        },
+        notes: {
+          acceptReporters: false, 
+          items: ['Χαμηλό Ντο (C3)', 'Χαμηλό Ντο# (C3#)'] 
+        },
+        note_times: {
+          acceptReporters: false, 
+          items: ['μισό', 'τέταρτο', 'όγδοο', 'ολόκληρο', 'διπλό', 'στοπ'] 
+        },
+
       }
     };
-  }
-
-  async debugRead() {
-    if (!this.reader) return 'no reader';
-    const { value } = await this.reader.read();
-    return new TextDecoder().decode(value || new Uint8Array()).trim();
   }
 
   async ensureConnection() {
@@ -286,9 +356,11 @@ class ArduinoWebSerial {
   async connect() {
     try {
       if (!(await this.ensureConnection())) {
-        this.port = await navigator.serial.requestPort();
-        await this.port.open({ baudRate: 9600 });
-        await this.setupStreams();
+        if (!this.port) {
+          this.port = await navigator.serial.requestPort();
+          await this.port.open({ baudRate: 9600 });
+          await this.setupStreams();
+        }
       }
     } catch (err) {
       alert('Η σύνδεση απέτυχε: ' + err.message);
@@ -313,9 +385,16 @@ class ArduinoWebSerial {
     return value.trim();
   }
 
+  async connectionStatus() {
+    if (!this.port)
+      return 'Χωρίς σύνδεση...';
+    else 
+      return 'Συνδεδεμένο!';
+  }
+  
   async led(args) {
     if (!this.writer) {
-      alert('Not connected yet!');
+      alert('Χωρίς σύνδεση με το S1!');
       return;
     }
     const pin = args.PIN;
@@ -326,7 +405,7 @@ class ArduinoWebSerial {
 
   async led_brightness(args) {
     if (!this.writer) {
-      alert('Not connected yet!');
+      alert('Χωρίς σύνδεση με το S1!');
       return;
     }
     const pin = args.PIN;
@@ -338,7 +417,7 @@ class ArduinoWebSerial {
 
   async motor(args) {
     if (!this.writer) {
-      alert('Not connected yet!');
+      alert('Χωρίς σύνδεση με το S1!');
       return;
     }
     const speed = args.SPEED;
@@ -349,9 +428,35 @@ class ArduinoWebSerial {
     await this.writer.write(cmd + '\n');
   }
 
+  async buzzer(args) {
+    if (!this.writer) {
+      alert('Χωρίς σύνδεση με το S1!');
+      return;
+    }
+    const pin = args.PIN;
+    const note = args.NOTE;
+    const time = args.TIME;
+    //TODO
+  }
+
+  async neopixel(args) {
+    if (!this.writer) {
+      alert('Χωρίς σύνδεση με το S1!');
+      return;
+    }
+    const pin = args.PIN;
+    const leds = args.LEDS;
+    const r = args.R;
+    const g = args.G;
+    const b = args.B;
+    const brightness = args.BRIGHTNESS;
+    //TODO
+
+  }
+
   async servo(args) {
     if (!this.writer) {
-      alert('Not connected yet!');
+      alert('Χωρίς σύνδεση με το S1!');
       return;
     }
     const pin = args.PIN;
@@ -363,7 +468,7 @@ class ArduinoWebSerial {
 
   async readTemp(args) {
     if (!this.writer) {
-      alert('Not connected yet!');
+      alert('Χωρίς σύνδεση με το S1!');
       return;
     }
     const pin = args.PIN;
@@ -383,7 +488,7 @@ class ArduinoWebSerial {
 
   async readHum(args) {
     if (!this.writer) {
-      alert('Not connected yet!');
+      alert('Χωρίς σύνδεση με το S1!');
       return;
     }
     const pin = args.PIN;
@@ -423,7 +528,7 @@ class ArduinoWebSerial {
   
   async isButtonPressed(args) {
     if (!this.writer) {
-      alert('Not connected yet!');
+      alert('Χωρίς σύνδεση με το S1!');
       return;
     }
     const pin = args.PIN;
@@ -443,7 +548,7 @@ class ArduinoWebSerial {
 
   async isButton2Pressed(args) { // κουμπί αφής
     if (!this.writer) {
-      alert('Not connected yet!');
+      alert('Χωρίς σύνδεση με το S1!');
       return;
     }
     const pin = args.PIN;
