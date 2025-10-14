@@ -1,9 +1,11 @@
 #include <Servo.h>
 #include <DHT11.h>
+#include <Adafruit_NeoPixel.h>
 
 String args[] = { "arg0", "arg1", "arg2", "arg3", "arg4" };
 int num_args = 0, state;
 Servo tServo;
+Adafruit_NeoPixel tNeopixel(4, 6, NEO_GRB + NEO_KHZ800);
 
 void setup() {
   pinMode(13, OUTPUT);
@@ -91,7 +93,18 @@ void loop() {
     } else if (args[0] == "BUZZER") {
         tone(args[1].toInt(), args[2].toInt(), args[3].toInt());
     } else if (args[0] == "NEOPIXEL") {
-
+        tNeopixel.begin();
+        tNeopixel.setPin(args[1].toInt());
+        if (args[2].toInt()==4) {
+          tNeopixel.setPixelColor(0, tNeopixel.Color(args[3].toInt(), args[4].toInt(), args[5].toInt()));
+          tNeopixel.setPixelColor(1, tNeopixel.Color(args[3].toInt(), args[4].toInt(), args[5].toInt()));
+          tNeopixel.setPixelColor(2, tNeopixel.Color(args[3].toInt(), args[4].toInt(), args[5].toInt()));
+          tNeopixel.setPixelColor(3, tNeopixel.Color(args[3].toInt(), args[4].toInt(), args[5].toInt()));
+        } else {
+          tNeopixel.setPixelColor(args[2].toInt(), tNeopixel.Color(args[3].toInt(), args[4].toInt(), args[5].toInt()));
+        }
+        tNeopixel.setBrightness(args[6].toInt());
+	      tNeopixel.show();
     } else {
       Serial.println("Not implemented");
     }

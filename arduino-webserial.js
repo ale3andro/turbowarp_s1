@@ -570,8 +570,6 @@ class ArduinoWebSerial {
           note = 494;
     }   
     const cmd = 'BUZZER_' + pin.substring(1) + '_' + note + '_' + time;
-    console.log(cmd);
-    
     await this.writer.write(cmd + '\n');
   }
 
@@ -581,13 +579,30 @@ class ArduinoWebSerial {
       return;
     }
     const pin = args.PIN;
-    const leds = args.LEDS;
+    const tLeds = args.LEDS;
     const r = args.R;
     const g = args.G;
     const b = args.B;
     const brightness = args.BRIGHTNESS;
-    //TODO
-
+    var leds = 0;
+    switch (tLeds) {
+      case '1ο':
+        leds = 0;
+        break;
+      case '2ο':
+        leds = 1;
+        break;
+      case '3ο':
+        leds = 2;
+        break;
+      case '4ο':
+        leds = 3;
+        break;
+      default:
+        leds = 4;
+    }
+    const cmd = "NEOPIXEL_" + pin.substring(1) + '_' + leds + '_' + r + '_' + g + '_' + b + '_' + brightness;
+    await this.writer.write(cmd + '\n');
   }
 
   async servo(args) {
