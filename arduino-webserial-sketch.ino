@@ -88,6 +88,10 @@ void loop() {
     } else if (args[0] == "BUTTON2") { // κουμπί αφής
         state = digitalRead(args[1].toInt());
         Serial.println(state == LOW ? "0" : "1");
+    } else if (args[0] == "BUZZER") {
+        tone(args[1].toInt(), args[2].toInt(), args[3].toInt());
+    } else if (args[0] == "NEOPIXEL") {
+
     } else {
       Serial.println("Not implemented");
     }
